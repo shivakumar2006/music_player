@@ -1,29 +1,26 @@
-import {Error, Loader, SongCard} from '../components'; 
+import { Error, Loader, SongCard } from '../components'; 
 import { genres } from "../assets/constants";
-
 import { useGetTopChartsQuery } from '../redux/services/shazamCore';
 
 const Discover = () => {
-    const { data, isFetching, error } = useGetTopChartsQuery();
+    const { data, isFetching, error } = useGetTopChartsQuery(50);
     const genreTitle = 'pop';
 
-    if(isFetching) return <Loader title='Loading Songs...' />;
+    if (isFetching) return <Loader title='Loading Songs...' />;
 
-    if(error) {// Handle specific error type
-    if (error.status === 502) {
-        return <Error message="API is currently unavailable. Please try again later." />;
+    if (error) {
+        if (error.status === 502) {
+            return <Error message="API is currently unavailable. Please try again later." />;
+        }
+        return <Error />;
     }
-    return <Error />;
-}
 
-    console.log("API response : ", data);
-    
-   
+    console.log("API response : ", data); // Log full response
 
     return (
         <div className="flex flex-col"> 
             <div className='w-full flex justify-between items-center sm:flex-row flex-col mt-4 mb-10'>
-                <h2 className='font-bold text-3x1 text-white text-left'>Discover {genreTitle}</h2>
+                <h2 className='font-bold text-3xl text-white text-left'>Discover {genreTitle}</h2>
                 <select 
                    onChange={() => {}}
                    value=''
@@ -33,16 +30,30 @@ const Discover = () => {
                 </select>
             </div>
             <div className='flex flex-wrap sm:justify-start justify-center gap-8'>
-                {data?.result?.data?.map((song, i) => (
-                    <SongCard 
-                        key={song.id || song.href || i} // fallback to 'href' or 'index' if 'id' is not available
-                        song={song}
-                        i={i}
-                    />
-                ))}
+                {data ? (
+                    data.map((song, i) => {
+                        const songId = song?.videoId || `${song?.kind}_${i}`; // Use videoId as fallback key
+
+                        // Ensure that we have enough data to render, even if thumbnails or snippet are missing
+                        if (!song?.videoId) {
+                            console.error("Missing videoId for song: ", song);
+                            return null; // Skip rendering if videoId is missing
+                        }
+
+                        return (
+                            <SongCard 
+                                key={songId} // Use videoId as key
+                                song={song}   // Pass the whole song object to SongCard
+                                i={i}
+                            />
+                        );
+                    })
+                ) : (
+                    <p>No songs available</p>
+                )}
             </div>
         </div>
-    )
+    );
 }
 
 export default Discover;
