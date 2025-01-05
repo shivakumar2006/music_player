@@ -9,11 +9,12 @@ const SongCard = ({ song, i, activeSong, isPlaying, data }) => {
   const dispatch = useDispatch();
 
   const handlePauseClick = () => {
-
+    dispatch(PlayPause(flase));
   };
 
   const handlePlayClick = () => {
-
+    dispatch(setActiveSong({song, data, i}));
+    dispatch(PlayPause(true));
   };
 
   // const songTitle = song.snippet?.title || "No Title Available";
