@@ -6,7 +6,8 @@ import Search from './Search';
 import TopCharts from './TopCharts';
 import AroundYou from './AroundYou';
 
-export {
+
+export  {
   Discover,
   Search,
   TopArtists,
