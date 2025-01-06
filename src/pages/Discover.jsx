@@ -1,17 +1,18 @@
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Error, Loader, SongCard } from '../components'; 
 import { genres } from "../assets/constants";
 import { useGetTopChartsQuery } from '../redux/services/shazamCore';
+import { setActiveSong, playPause } from "../redux/features/playerSlice"; // Import necessary actions
 
 const Discover = () => {
     const dispatch = useDispatch();
-    const {activeSong, isPlaying} = useSelector((state) => state.player);
+    const { activeSong, isPlaying } = useSelector((state) => state.player); // Get the state from redux
     const { data, isFetching, error } = useGetTopChartsQuery(50);
     const genreTitle = 'pop';
 
     if (isFetching) return <Loader title='Loading Songs...' />;
-
     if (error) {
         if (error.status === 502) {
             return <Error message="API is currently unavailable. Please try again later." />;
@@ -19,7 +20,14 @@ const Discover = () => {
         return <Error />;
     }
 
-    console.log("API response : ", data); // Log full response
+    const handlePlay = (song, i) => {
+        dispatch(setActiveSong({ song, data, i })); // Set the clicked song as active
+        dispatch(playPause(true)); // Play the song
+    };
+
+    const handlePause = () => {
+        dispatch(playPause(false)); // Pause the current song
+    };
 
     return (
         <div className="flex flex-col"> 
@@ -52,6 +60,8 @@ const Discover = () => {
                                 activeSong={activeSong} 
                                 data={data} // Pass the whole song object to SongCard
                                 i={i}
+                                handlePlay={() => handlePlay(song, i)} // Pass handlePlay function
+                                handlePause={handlePause} // Pass handlePause function
                             />
                         );
                     })

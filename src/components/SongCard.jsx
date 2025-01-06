@@ -1,45 +1,54 @@
 import { Link } from "react-router-dom";
+import PlayPause from './PlayPause'; // Import the PlayPause component
 import { useDispatch } from "react-redux";
-import PlayPause from './PlayPause';
-import { setActiveSong } from "../redux/features/playerSlice";
+import { setActiveSong, playPause } from "../redux/features/playerSlice";
 
-const SongCard = ({ song, i, activeSong, isPlaying, data }) => {
-  console.log("Full song object: ", song);
-
+const SongCard = ({ song, i, activeSong, isPlaying, handlePlay, handlePause }) => {
   const dispatch = useDispatch();
 
-  const handlePauseClick = () => {
-    dispatch(PlayPause(flase));
-  };
-
+  // Handle play button click for a song
   const handlePlayClick = () => {
-    dispatch(setActiveSong({song, data, i}));
-    dispatch(PlayPause(true));
+    if (activeSong?.title === song?.title) {
+      // If this song is already playing, toggle play/pause
+      dispatch(playPause(!isPlaying));
+    } else {
+      // If this song is not the active song, set it as the active song and play it
+      dispatch(setActiveSong({ song, data: [], i }));
+      dispatch(playPause(true)); // Play the clicked song
+    }
   };
 
-  // const songTitle = song.snippet?.title || "No Title Available";
-  // const songSubtitle = song.snippet?.channelTitle || "No Artist Available";
+  // Handle pause button click
+  const handlePauseClick = () => {
+    dispatch(playPause(false)); // Pause the song
+  };
+
+  // Default song title and artist for missing data
   const songTitle = song.title || song.snippet?.title || "No Title Available";
   const songSubtitle = song.snippet?.channelTitle || song.artist || "No Artist Available";
 
-
+  // Default song image if missing
   const songImage = song.snippet?.thumbnails?.medium?.url || 'https://via.placeholder.com/250x250';
-
-  const handleSetActiveSong = () => {
-    setActiveSong(song);
-  };
 
   return (
     <div className="flex flex-col w-[250px] p-4 bg-white/5 bg-opacity-80 backdrop-blur-sm animate-slideup rounded-lg cursor-pointer song-card-hover">
       <div className="relative w-full h-56 group">
-        <div className={`absolute inset-0 justify-center items-center bg-black bg-opacity-50 group-hover:flex ${activeSong?.title === song?.snippet?.title ? 'flex bg-black bg-opacity-70' : 'hidden'}`}>
-          <PlayPause isPlaying={isPlaying} activeSong={activeSong} song={song} handlePause={handlePauseClick} handlePlay={handlePlayClick} />
+        {/* Overlay with play/pause button */}
+        <div className={`absolute inset-0 justify-center items-center bg-black bg-opacity-50 group-hover:flex ${activeSong?.title === song?.title ? 'flex bg-black bg-opacity-70' : 'hidden'}`}>
+          <PlayPause
+            isPlaying={isPlaying && activeSong?.title === song?.title} // Only show play/pause for the active song
+            activeSong={activeSong}
+            song={song}
+            handlePause={handlePauseClick}
+            handlePlay={handlePlayClick}
+          />
         </div>
+        {/* Song image */}
         <img 
           alt={songTitle} 
           src={songImage} 
           className="w-full h-full object-cover" 
-          onClick={handleSetActiveSong}
+          onClick={handlePlayClick} // Set this song as active and play it
         />
       </div>
       <div className="mt-4 flex flex-col">
